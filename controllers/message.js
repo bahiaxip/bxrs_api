@@ -90,6 +90,15 @@ var controller = {
     })
   },
 
+  getLastMessages:function(req,res){
+    var lastMessageCreatedAt = req.params.created;
+    Message.find({"receiver":req.user.sub,created_at:{$gt:lastMessageCreatedAt}},(err,messages) => {
+      if(err) return res.status(500).send({message: "Error en la petición de últimos mensajes"});
+      if(!messages) return res.status(404).send({message: "No existen nuevas publicaciones"});
+      return res.status(200).send({messages});
+    })
+  },
+
   getEmmittedMessages:function(req,res){
     var userId = req.user.sub;
 

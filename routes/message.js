@@ -11,5 +11,6 @@ api.get("/sended-messages/:page?",auth.ensureAuth,MessageController.getEmmittedM
 //no posible, siempre toma el primero, para mandar el segundo es necesario enviar el primero
 //api.delete("/message/:sended?/:received?",auth.ensureAuth,MessageController.deleteMessage);
 api.delete("/message/:id",auth.ensureAuth,MessageController.deleteMessage);
-api.put("/message/:id",MessageController.updateReceivedMessage);
+api.put("/message/:id",auth.ensureAuth,MessageController.updateReceivedMessage);
+api.get("/messages/:created",auth.ensureAuth,MessageController.getLastMessages);
 module.exports=api;

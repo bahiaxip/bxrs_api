@@ -72,7 +72,7 @@ var controller = {
   getReceivedMessages:function(req,res){
     var userId=req.user.sub;
 
-    Message.find({"receiver":userId}).populate("emitter","nick").exec((err,messages) =>{
+    Message.find({"receiver":userId}).populate("emitter","nick").sort({created_at:"desc"}).exec((err,messages) =>{
       if(err) return res.status(500).send({message: "Error en la petición del mensaje"});
       if(!messages) return res.status(404).send({message: "No existen mensajes"});
 
@@ -85,7 +85,7 @@ var controller = {
   getEmmittedMessages:function(req,res){
     var userId = req.user.sub;
 
-    Message.find({"emitter":userId}).populate("emitter receiver","nick").exec((err,messages) => {
+    Message.find({"emitter":userId}).populate("emitter receiver","nick").sort({created_at:"desc"}).exec((err,messages) => {
       if(err) return res.status(500).send({message: "Error en la petición"});
       if(!messages) return res.status(404).send({message: "No existen mensajes"});
       return res.status(200).send({

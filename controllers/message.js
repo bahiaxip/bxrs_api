@@ -69,6 +69,14 @@ var controller = {
 
   },
 
+  updateReceivedMessage:function(req,res){
+    var messageId=req.params.id;
+    Message.findByIdAndUpdate(messageId,{viewed:'true'},{new:true},(err,messageUpdated) => {
+      if(err) return res.status(500).send({message: "Error en la petición"});
+      return res.status(200).send({message: messageUpdated})
+    });
+  },
+
   getReceivedMessages:function(req,res){
     var userId=req.user.sub;
 

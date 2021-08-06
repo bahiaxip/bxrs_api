@@ -53,7 +53,7 @@ var controller = {
         if(err) return res.status(500).send({message: "Error en la petición"})
         if(!message) return res.status(404).send({message: "No se encuentra el mensaje"})
         message.remove(err=> {
-          if(err) return res.status(500).send({message: "No se pudo borrar el mensaje"})
+          if(err) return res.status(500).send({message: "No se ha eliminado el mensaje"})
           return res.status(200).send({
             message: "El mensaje ha sido eliminado",
             status:"success"
@@ -64,9 +64,6 @@ var controller = {
     }else{
       return res.status(500).send({message: "Faltan datos"});
     }
-
-
-
   },
 
   updateReceivedMessage:function(req,res){
@@ -95,7 +92,7 @@ var controller = {
     Message.find({"receiver":req.user.sub,created_at:{$gt:lastMessageCreatedAt}}).populate("emitter","nick")
       .sort({created_at:"desc"}).exec((err,messages) => {
       if(err) return res.status(500).send({message: "Error en la petición de últimos mensajes"});
-      if(!messages) return res.status(404).send({message: "No existen nuevas publicaciones"});
+      if(!messages) return res.status(404).send({message: "No existen nuevos mensajes"});
       return res.status(200).send({messages});
     })
   },

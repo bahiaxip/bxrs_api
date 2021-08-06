@@ -49,15 +49,15 @@ var controller= {
           if(err) return res.status(500).send({message: "Error en la petición de usuario"});
 
           if(users && users.length >= 1){
-            return res.status(200).send({
-              message: "El usuario ya existe"
+            return res.status(409).send({
+              message: "El usuario ya se encuentra registrado en la base de datos"
             });
           }else{
             //comprobamos antes si los directorios ya existen con ese mismo correo y evitamos futuros conflictos
             if(fs.existsSync("./uploads/users/"+params.email)
                && fs.existsSync("./uploads/publications/"+params.email)){
                 console.log("Los directorios de imágenes ya estaban creados y pueden generar conflictos");
-                return res.status(200).send({message: "No se pudo crear el usuario, error al crear directorios"})
+                return res.status(409).send({message: "No se pudo crear el usuario, error al crear directorios"})
             }
             //creamos directorios individuales para imagen de perfil y publicaciones
             fs.mkdirSync('./uploads/users/'+params.email,{recursive:true});
@@ -72,14 +72,14 @@ var controller= {
                 if(userStored){
                   visibility.user=user._id;
                   visibility.save((err,visibilityStored) => {
-                    if(err) return res.status(500).send({message: "Error al guardar visibility"})
+                    if(err) return res.status(422).send({message: "Error al guardar la opción visibility"})
 
-                    if(!visibilityStored) return res.status(200).send({message: "Usuario creado pero hubo un error con visibility"})
+                    if(!visibilityStored) return res.status(422).send({message: "Usuario creado pero se originó un error"})
 
                     if(visibilityStored){
                       res.status(200).send({
                         user:userStored,
-                        message: "Usuario creado correctamente"
+                        message: "El usuario ha sido creado correctamente"
                       })
                     }
                   })
@@ -96,15 +96,15 @@ var controller= {
         })
 
     }else{
-      res.status(200).send({
-        message: "Faltan datos"
+      res.status(422).send({
+        message: "Faltan datos requeridos"
       });
     }
   },
   getTotalUsers:function(req,res){
 
     User.find((err,users) => {
-      if(err) return res.status(500).send({message: "Error en la petición"});
+      if(err) return res.status(500).send({message: "Error en la petición total usuarios"});
       if(!users) return res.status(404).send({message: "No hay usuarios disponibles"});
 
       return res.status(200).send({
@@ -160,11 +160,12 @@ var controller= {
     var params=req.body;
     var email=params.email;
     var password = params.password;
-
     User.findOne({email:email},(err,user) => {
       if(err) return res.status(500).send({message: "Error en el inicio de sesión"});
       if(user){
         bcrypt.compare(password,user.password,(err,check) => {
+          console.log("user: ",user)
+          console.log("check:",check)
           if(check){
             if(params.gettoken){
               return res.status(200).send({
@@ -175,11 +176,11 @@ var controller= {
             user.password=undefined;
             return res.status(200).send({user})
           }else{
-            return res.status(404).send({message: "El usuario no se ha podido identificar"});
+            return res.status(404).send({message: "El usuario o la contraseña no son correctos"});
           }
         });
       }else{
-        return res.status(404).send({message: "El usuario no se ha podido identificar"});
+        return res.status(404).send({message: "El usuario no se encuentra registrado en la base de datos"});
       }
     });
   },

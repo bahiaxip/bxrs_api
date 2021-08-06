@@ -21,7 +21,7 @@ var controller = {
     publication.created_at = moment().unix();
     publication.save((err,publicationStored) => {
       if(err)
-        return res.status(404).send({message: "error storing publication"});
+        return res.status(500).send({message: "error storing publication"});
       if(!publicationStored)
         return res.status(404).send({message: "publication hasn't been stored"})
       return res.status(200).send({publication:publicationStored});
@@ -51,8 +51,8 @@ var controller = {
       }
 
       Publication.paginate({user:{"$in":followList}},options,(err,publications) =>{
-        if(err) return res.status(500).send({message: "Error al devolver las publicaciones"});
-        if(!publications) return res.status(404).send({message: "No hay publicaciones"});
+        if(err) return res.status(500).send({message: "Error en la petición de publicaciones"});
+        if(!publications) return res.status(404).send({message: "No existen publicaciones"});
 
         return res.status(200).send({
           publications:publications
@@ -77,14 +77,14 @@ var controller = {
   getLastPublications:function(req,res){
     var lastPubCreatedAt = req.params.created;
     Follow.find({user:req.user.sub}).populate("followed").exec((err,follows) => {
-      if(err) return res.status(500).send({message: "Error al obtener los seguidores"});
+      if(err) return res.status(500).send({message: "Error en la petición de seguidores"});
       var followList = [];
       follows.forEach((follow) => {
         followList.push(follow.followed);
       });
       followList.push(req.user.sub);
       Publication.find({user:{"$in":followList},created_at:{$gt:lastPubCreatedAt}},(err,publications) => {
-        if(err) return res.status(500).send({message: "Error en la petición"});
+        if(err) return res.status(500).send({message: "Error en la petición de publicaciones"});
         if(!publications) return res.status(404).send({message: "No existen publicaciones"});
         return res.status(200).send({ publications});
       })
@@ -110,7 +110,8 @@ var controller = {
     console.log("publicacion: ",publication)
     console.log(publication)
     Publication.findByIdAndUpdate(publicationId,{text:publication.text},{new:true},(err,publicationUpdated)=> {
-      if(err) return res.status(500).send({message: "Error con la actualización de la publicación"})
+      if(err) return res.status(500).send({message: "Error con la actualización de la publicación"});
+      if(!publicationUpdated) return res.status(404).send({message: "No existe la publicación"});
         return res.status(200).send({
           publication:publicationUpdated
         })
